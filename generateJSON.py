@@ -12,7 +12,7 @@ def main():
     file_name = "school11v3_latest"
     file_extension = ".rnp"
     current_dir = os.path.dirname(os.path.realpath(__file__))
-    renga_file_path = os.path.join(current_dir, '..', 'res', 'renga', file_name + file_extension)
+    renga_file_path = os.path.join(current_dir, file_name + file_extension)
     app.OpenProject(renga_file_path)
     project = app.Project
     model = project.Model
