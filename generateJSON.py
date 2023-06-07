@@ -4,12 +4,12 @@ import os
 import win32com.client
 
 
-def inEdge(x, y, xp, yp):
+def inEdge(x: list[float], y: list[float], xp: list[float], yp: list[float]) -> bool | None:
     for idx in range(len(x)):
         for i in range(len(xp)):
-            inEdge = (xp[i] == xp[i - 1] and
-                      xp[i] == x[idx] and
-                      min(yp[i], yp[i - 1]) <= y[idx] <= max(yp[i], yp[i - 1]))
+            inEdge: bool = (xp[i] == xp[i - 1] and
+                            xp[i] == x[idx] and
+                            min(yp[i], yp[i - 1]) <= y[idx] <= max(yp[i], yp[i - 1]))
             if not inEdge:
                 inEdge = (yp[i] == yp[i - 1] and
                           yp[i] == y[idx] and
@@ -64,7 +64,7 @@ def get_coord(build_elem):
 def inDoor(doorSizeZ, zStair, zDoor):
     for stair in zStair:
         for door in zDoor:
-            if (door - doorSizeZ <= stair and stair <= door):
+            if door - doorSizeZ <= stair and stair <= door:
                 print(f'door - doorSizeZ {door - doorSizeZ} <= stair {stair} <= door {door}')
                 return True
 
@@ -168,7 +168,7 @@ def main():
                 polygonPointsStair = []
                 # print(minPointZ)
                 for point in points:  # Выбираем самые низкие и высокие точки летницы
-                    if ((point['z'] == minPointZ or point['z'] == maxPointZ) and point not in polygonPointsStair):
+                    if (point['z'] == minPointZ or point['z'] == maxPointZ) and point not in polygonPointsStair:
                         polygonPointsStair.append(point)
                 # print(len(polygonPointsStair))
                 stair['XY'] = [{'points': polygonPointsStair}]
