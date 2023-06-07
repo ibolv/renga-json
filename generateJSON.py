@@ -4,7 +4,7 @@ import os
 import win32com.client
 
 
-def inEdge(x: list[float], y: list[float], xp: list[float], yp: list[float]) -> bool | None:
+def inEdge(x: list[float], y: list[float], xp: list[float], yp: list[float]) -> bool:
     for idx in range(len(x)):
         for i in range(len(xp)):
             inEdge: bool = (xp[i] == xp[i - 1] and
@@ -24,6 +24,7 @@ def inEdge(x: list[float], y: list[float], xp: list[float], yp: list[float]) -> 
                 inEdge = (a * x[idx] + b * y[idx] + c == 0)
             if inEdge:
                 return inEdge
+    return False
 
 
 def inEdgeXYZ(x, y, z, xp, yp, zp, doorSizeZ):
