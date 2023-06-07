@@ -4,6 +4,71 @@ import os
 import win32com.client
 
 
+def inEdge(x, y, xp, yp):
+    for idx in range(len(x)):
+        for i in range(len(xp)):
+            inEdge = (xp[i] == xp[i - 1] and
+                      xp[i] == x[idx] and
+                      min(yp[i], yp[i - 1]) <= y[idx] <= max(yp[i], yp[i - 1]))
+            if not inEdge:
+                inEdge = (yp[i] == yp[i - 1] and
+                          yp[i] == y[idx] and
+                          min(xp[i], xp[i - 1]) <= x[idx] <= max(xp[i], xp[i - 1]))
+            if not inEdge:
+                inEdge = (min(yp[i], yp[i - 1]) <= y[idx] <= max(yp[i], yp[i - 1]) and
+                          min(xp[i], xp[i - 1]) <= x[idx] <= max(xp[i], xp[i - 1]))
+            if not inEdge:  # проверка вхождения точки в отрезок (Общее уравнение прямой)
+                a = yp[i] - yp[i - 1]
+                b = xp[i - 1] - xp[i]
+                c = xp[i - 1] * yp[i] - xp[i] * yp[i - 1]
+                inEdge = (a * x[idx] + b * y[idx] + c == 0)
+            if inEdge:
+                return inEdge
+
+
+def inEdgeXYZ(x, y, z, xp, yp, zp, doorSizeZ):
+    for idx in range(len(x)):
+        for i in range(len(xp)):
+            botDoor = max(zp) - doorSizeZ
+            inEdge = (xp[i] == xp[i - 1] and
+                      xp[i] == x[idx] and
+                      min(yp[i], yp[i - 1]) <= y[idx] <= max(yp[i], yp[i - 1]) and
+                      botDoor <= z[idx] <= max(zp))
+            if not inEdge:
+                inEdge = (yp[i] == yp[i - 1] and
+                          yp[i] == y[idx] and
+                          min(xp[i], xp[i - 1]) <= x[idx] <= max(xp[i], xp[i - 1]) and
+                          botDoor <= z[idx] <= max(zp))
+            if not inEdge:
+                inEdge = (min(yp[i], yp[i - 1]) <= y[idx] <= max(yp[i], yp[i - 1]) and
+                          min(xp[i], xp[i - 1]) <= x[idx] <= max(xp[i], xp[i - 1]) and
+                          botDoor <= z[idx] <= max(zp))
+            # if not inEdge:           проверка вхождения точки в отрезок (Общее уравнение прямой)
+            #    a = yp[i] - yp[i-1]
+            #    b = xp[i-1] - xp[i]
+            #    c = xp[i-1]*yp[i] - xp[i]*yp[i-1]
+            #    inEdge = (a*x[idx]+b*y[idx]+c == 0)
+            if inEdge:
+                return inEdge
+
+
+def get_coord(build_elem):
+    x: list[float] = []
+    y: list[float] = []
+    for i in range(len(build_elem['XY'][0]['points'])):
+        x.append(build_elem['XY'][0]['points'][i]['x'])
+        y.append(build_elem['XY'][0]['points'][i]['y'])
+    return {'X': x, 'Y': y}
+
+
+def inDoor(doorSizeZ, zStair, zDoor):
+    for stair in zStair:
+        for door in zDoor:
+            if (door - doorSizeZ <= stair and stair <= door):
+                print(f'door - doorSizeZ {door - doorSizeZ} <= stair {stair} <= door {door}')
+                return True
+
+
 def main():
     app = win32com.client.Dispatch("Renga.Application.1")
 
@@ -269,60 +334,6 @@ def main():
     #                print((x[idx] - xp[i])*(yp[i-1] - yp[i]) - (y[idx] - yp[i])*(xp[i-1] - xp[i]))
     #    return c
 
-    def inEdge(x, y, xp, yp):
-        for idx in range(len(x)):
-            for i in range(len(xp)):
-                inEdge = (xp[i] == xp[i - 1] and
-                          xp[i] == x[idx] and
-                          min(yp[i], yp[i - 1]) <= y[idx] <= max(yp[i], yp[i - 1]))
-                if not inEdge:
-                    inEdge = (yp[i] == yp[i - 1] and
-                              yp[i] == y[idx] and
-                              min(xp[i], xp[i - 1]) <= x[idx] <= max(xp[i], xp[i - 1]))
-                if not inEdge:
-                    inEdge = (min(yp[i], yp[i - 1]) <= y[idx] <= max(yp[i], yp[i - 1]) and
-                              min(xp[i], xp[i - 1]) <= x[idx] <= max(xp[i], xp[i - 1]))
-                if not inEdge:  # проверка вхождения точки в отрезок (Общее уравнение прямой)
-                    a = yp[i] - yp[i - 1]
-                    b = xp[i - 1] - xp[i]
-                    c = xp[i - 1] * yp[i] - xp[i] * yp[i - 1]
-                    inEdge = (a * x[idx] + b * y[idx] + c == 0)
-                if inEdge:
-                    return inEdge
-
-    def inEdgeXYZ(x, y, z, xp, yp, zp, doorSizeZ):
-        for idx in range(len(x)):
-            for i in range(len(xp)):
-                botDoor = max(zp) - doorSizeZ
-                inEdge = (xp[i] == xp[i - 1] and
-                          xp[i] == x[idx] and
-                          min(yp[i], yp[i - 1]) <= y[idx] <= max(yp[i], yp[i - 1]) and
-                          botDoor <= z[idx] <= max(zp))
-                if not inEdge:
-                    inEdge = (yp[i] == yp[i - 1] and
-                              yp[i] == y[idx] and
-                              min(xp[i], xp[i - 1]) <= x[idx] <= max(xp[i], xp[i - 1]) and
-                              botDoor <= z[idx] <= max(zp))
-                if not inEdge:
-                    inEdge = (min(yp[i], yp[i - 1]) <= y[idx] <= max(yp[i], yp[i - 1]) and
-                              min(xp[i], xp[i - 1]) <= x[idx] <= max(xp[i], xp[i - 1]) and
-                              botDoor <= z[idx] <= max(zp))
-                # if not inEdge:           проверка вхождения точки в отрезок (Общее уравнение прямой)
-                #    a = yp[i] - yp[i-1]
-                #    b = xp[i-1] - xp[i]
-                #    c = xp[i-1]*yp[i] - xp[i]*yp[i-1]
-                #    inEdge = (a*x[idx]+b*y[idx]+c == 0)
-                if inEdge:
-                    return inEdge
-
-    def getCoord(BuildElem):
-        X = []
-        Y = []
-        for i in range(len(BuildElem['XY'][0]['points'])):
-            X.append(BuildElem['XY'][0]['points'][i]['x'])
-            Y.append(BuildElem['XY'][0]['points'][i]['y'])
-        return {'X': X, 'Y': Y}
-
     def getCoordXYZ(BuildElem):
         X = []
         Y = []
@@ -332,13 +343,6 @@ def main():
             Y.append(BuildElem['XY'][0]['points'][i]['y'])
             Z.append(BuildElem['XY'][0]['points'][i]['z'])
         return {'X': X, 'Y': Y, 'Z': Z}
-
-    def inDoor(doorSizeZ, zStair, zDoor):
-        for stair in zStair:
-            for door in zDoor:
-                if (door - doorSizeZ <= stair and stair <= door):
-                    print(f'door - doorSizeZ {door - doorSizeZ} <= stair {stair} <= door {door}')
-                    return True
 
     def getBuildingInfo():
         buildingInfo = project.BuildingInfo()
@@ -350,9 +354,9 @@ def main():
         level = []
 
         for room in roomsData:
-            roomPoints = getCoord(room)
+            roomPoints = get_coord(room)
             for door in doorsData:
-                doorPoints = getCoord(door)
+                doorPoints = get_coord(door)
                 if (room['ZLevel'] == door['ZLevel']):
                     if (inEdge(doorPoints['X'], doorPoints['Y'], roomPoints['X'], roomPoints['Y'])):
                         room['Output'].append(door['Id'])
