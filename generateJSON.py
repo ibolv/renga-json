@@ -141,7 +141,8 @@ def main():
                 stair['Sign'] = 'Staircase'
                 stair['Output'] = []
                 id_string = str(object_collection.GetById(object_id).UniqueIdS)
-                stair['Id'] = id_string[1: len(id_string) - 1]
+                # stair['Id'] = id_string[1: len(id_string) - 1]
+                stair['Id'] = id_string
                 stair['@'] = id_string[1: len(id_string) - 1]
                 stair['Name'] = object_collection.GetById(object_id).Name
 
@@ -224,7 +225,8 @@ def main():
                 room['Sign'] = 'Room'
                 room['Output'] = []
                 id_string = str(object_collection.GetById(object_id).UniqueIdS)
-                room['Id'] = id_string[1: len(id_string) - 1]
+                # room['Id'] = id_string[1: len(id_string) - 1]
+                room['Id'] = id_string
                 room['@'] = id_string[1: len(id_string) - 1]
                 room['Name'] = object_collection.GetById(object_id).Name
 
@@ -286,7 +288,7 @@ def main():
                 door['Sign'] = 'Door'
                 door['Output'] = []
                 id_string = str(object_collection.GetById(object_id).UniqueIdS)
-                door['Id'] = id_string[1:len(id_string) - 1]
+                door['Id'] = id_string
                 door['@'] = id_string[1:len(id_string) - 1]
                 door['Name'] = object_collection.GetById(object_id).Name
                 parameter_container = object_collection.GetById(object_id).GetParameters()
