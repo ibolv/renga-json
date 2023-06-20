@@ -1,5 +1,8 @@
 .idea
 .pytest_cache
+.ruff_cache
 __pycache__
-*.rnp
-*.json
+build
+*.egg-info
+
+resources
