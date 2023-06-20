@@ -442,7 +442,7 @@ def main():
         }
 
 
-        Path('resources').mkdir(parents=True, exist_ok=True)
+        Path(resource_dir_name).mkdir(parents=True, exist_ok=True)
         out_file_path = os.path.join(resource_dir_name, f'{file_name}.json')
         with open(out_file_path, 'w', encoding='utf-8') as jsonf:
             json_string = json.dumps(jsn, indent=4, ensure_ascii=False)
