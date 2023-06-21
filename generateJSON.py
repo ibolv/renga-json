@@ -1,5 +1,6 @@
 import json
 import os
+from pathlib import Path
 
 import win32com.client
 
@@ -88,10 +89,11 @@ def main():
 
     app.Visible = True
 
+    resource_dir_name = 'resources'
     file_name = "school11v3_latest"
     file_extension = ".rnp"
     current_dir = os.path.dirname(os.path.realpath(__file__))
-    renga_file_path = os.path.join(current_dir, file_name + file_extension)
+    renga_file_path = os.path.join(current_dir, resource_dir_name, file_name + file_extension)
     app.OpenProject(renga_file_path)
     project = app.Project
     model = project.Model
@@ -140,9 +142,9 @@ def main():
                 object_id = object3_d.ModelObjectId
                 stair['Sign'] = 'Staircase'
                 stair['Output'] = []
-                id_string = str(object_collection.GetById(object_id).UniqueIdS)
-                # stair['Id'] = id_string[1: len(id_string) - 1]
-                stair['Id'] = id_string
+                id_string = object_collection.GetById(object_id).UniqueIdS
+                stair['Id'] = id_string[1: len(id_string) - 1]
+                # stair['Id'] = id_string
                 stair['@'] = id_string[1: len(id_string) - 1]
                 stair['Name'] = object_collection.GetById(object_id).Name
 
@@ -179,7 +181,7 @@ def main():
                         # print(f' Комната {gridRoom.GetVertex(k)}')
                         # xPoints.append(gridRoom.GetVertex(k).X)
                         # yPoints.append(gridRoom.GetVertex(k).Y)
-                        points.append(points[0])
+                        # points.append(points[0])
 
                 print(len(points_z))
                 min_point_z = min(points_z)
@@ -224,9 +226,9 @@ def main():
                 object_collection.GetById(object_id)
                 room['Sign'] = 'Room'
                 room['Output'] = []
-                id_string = str(object_collection.GetById(object_id).UniqueIdS)
-                # room['Id'] = id_string[1: len(id_string) - 1]
-                room['Id'] = id_string
+                id_string = object_collection.GetById(object_id).UniqueIdS
+                room['Id'] = id_string[1: len(id_string) - 1]
+                # room['Id'] = id_string
                 room['@'] = id_string[1: len(id_string) - 1]
                 room['Name'] = object_collection.GetById(object_id).Name
 
@@ -264,7 +266,7 @@ def main():
                             # print(f' Комната {gridRoom.GetVertex(k)}')
                             # xPoints.append(gridRoom.GetVertex(k).X)
                             # yPoints.append(gridRoom.GetVertex(k).Y)
-                        points.append(points[0])
+                        # points.append(points[0])
                 # triangleVertex.append(triangle)
                 room['XY'] = [{'points': points}]
                 # pprint(room)
@@ -287,8 +289,9 @@ def main():
                 object_id = object3d.ModelObjectId
                 door['Sign'] = 'Door'
                 door['Output'] = []
-                id_string = str(object_collection.GetById(object_id).UniqueIdS)
-                door['Id'] = id_string
+                id_string = object_collection.GetById(object_id).UniqueIdS
+                door['Id'] = id_string[1:len(id_string) - 1]
+                # door['Id'] = id_string
                 door['@'] = id_string[1:len(id_string) - 1]
                 door['Name'] = object_collection.GetById(object_id).Name
                 parameter_container = object_collection.GetById(object_id).GetParameters()
@@ -328,7 +331,7 @@ def main():
                             # print(f'Дверь {gridRoom.GetVertex(k)}')
                             # xPoints.push(gridRoom.GetVertex(k).X)
                             # yPoints.push(gridRoom.GetVertex(k).Y)
-                        points.append(points[0])
+                        # points.append(points[0])
                 max_point_z = max(points_z)
                 polygon_points_stair = []
                 for point in points:
@@ -438,7 +441,10 @@ def main():
             "Devs": []
         }
 
-        with open(f'{file_name}.json', 'w', encoding='utf-8') as jsonf:
+
+        Path(resource_dir_name).mkdir(parents=True, exist_ok=True)
+        out_file_path = os.path.join(resource_dir_name, f'{file_name}.json')
+        with open(out_file_path, 'w', encoding='utf-8') as jsonf:
             json_string = json.dumps(jsn, indent=4, ensure_ascii=False)
             jsonf.write(json_string)
 
