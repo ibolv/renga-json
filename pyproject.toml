@@ -5,13 +5,15 @@ description = 'Renga json'
 readme = 'README.md'
 requires-python = '>=3.11'
 
-dependencies = [
-	'pywin32 == 306',
+dependencies = ['pywin32 == 306']
+
+[project.optional-dependencies]
+all = [
 	'ruff == 0.0.272',
 	'pytest == 7.3.2',
 	'pyright == 1.1.314',
 	'black[d] == 23.3.0',
-	'pre-commit == 3.3.3'
+	'pre-commit == 3.3.3',
 ]
 
 [tool.ruff]
@@ -20,7 +22,22 @@ ignore = ['E501']
 
 [tool.black]
 target-version = ['py311']
-line-length = 120
+line-length = 100
 
 [tool.pyright]
-strict = ['**/*.py']
+pythonVersion = "3.11"
+typeCheckingMode = "strict"
+reportMissingTypeStubs = false
+reportCallInDefaultInitializer = true
+# reportImplicitOverride = true
+reportImplicitStringConcatenation = true
+reportImportCycles = true
+# reportMissingSuperCall = true
+reportPropertyTypeMismatch = true
+reportShadowedImports = true
+# reportUninitializedInstanceVariable = true
+# reportUnnecessaryTypeIgnoreComment = true
+# reportUnusedCallResult = true
+
+[tool.setuptools]
+py-modules = []

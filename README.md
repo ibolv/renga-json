@@ -8,7 +8,7 @@
 
 ### Установка проекта
 1. Скачать файлы проекта
-2. Выполнить `pip install .` для установки зависимостей
+2. Выполнить `pip install .[all]` для установки зависимостей
 3. Выполнить `pre-commit install` для установки pre commit хуков
 
 ### Запуск проекта
@@ -29,7 +29,7 @@
 
 ### project setup
 1. clone this repository
-2. run `pip install .` for install dependencies
+2. run `pip install .[all]` for install dependencies
 3. run `pre-commit install` for setup pre commit hooks
 
 ### project startup
@@ -39,5 +39,5 @@ run `python generateJSON.py` or `python3 generateJSON.py` in your terminal or ru
 to run tests execute `pytest` in your terminal
 
 ### code linting
-to lint code with ruff execute `ruff check .` in your terminal  
+to lint code with ruff execute `ruff check .` in your terminal
 to lint code with black execute `black --check .` in your terminal
