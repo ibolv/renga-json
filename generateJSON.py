@@ -1,8 +1,13 @@
-import json
 import os
 from pathlib import Path
-
+from uuid import UUID
+from typing import Literal, Any
+from domain.LevelElevation import LevelElevation
+from domain.Room import Room
+from domain.Point3D import Point3D
+from domain.Geometry import Geometry
 import win32com.client
+import orjson
 
 
 def is_in_edge(x: list[float], y: list[float], xp: list[float], yp: list[float]) -> bool:
@@ -71,14 +76,21 @@ def is_in_edge_xyz(
             #    inEdge = (a*x[idx]+b*y[idx]+c == 0)
             if in_edge:
                 return in_edge
+    return False
 
 
-def get_coord(build_elem):
+def get_coord(build_elem) -> dict[Literal["X", "Y"], list[float]]:
     x: list[float] = []
     y: list[float] = []
-    for i in range(len(build_elem["XY"][0]["points"])):
-        x.append(build_elem["XY"][0]["points"][i]["x"])
-        y.append(build_elem["XY"][0]["points"][i]["y"])
+
+    if isinstance(build_elem, Room):
+        for i in range(len(build_elem.xy[0].points)):
+            x.append(build_elem.xy[0].points[i].x)
+            y.append(build_elem.xy[0].points[i].y)
+    else:
+        for i in range(len(build_elem["XY"][0]["points"])):
+            x.append(build_elem["XY"][0]["points"][i]["x"])
+            y.append(build_elem["XY"][0]["points"][i]["y"])
     return {"X": x, "Y": y}
 
 
@@ -107,19 +119,19 @@ def main():
     # GUID for the 'level' object type, as listed in documentation. See "Object types".
     level_type = "{c3ce17ff-6f28-411f-b18d-74fe957b2ba8}".upper()
     room_type = "{f1a805ff-573d-f46b-ffba-57f4bccaa6ed}".upper()
-    "{4329112a-6b65-48d9-9da8-abf1f8f36327}".upper()
-    "{f5bd8bd8-39c1-47f8-8499-f673c580dfbe}".upper()
+    # "{4329112a-6b65-48d9-9da8-abf1f8f36327}".upper()
+    # "{f5bd8bd8-39c1-47f8-8499-f673c580dfbe}".upper()
     door_type = "{1cfba99c-01e7-4078-ae1a-3e2ff0673599}".upper()
-    "{386ee889-38aa-4016-9e62-6b893f99ce43}".upper()
+    # "{386ee889-38aa-4016-9e62-6b893f99ce43}".upper()
     stair_type = "{3f522f49-aee2-4d73-9866-9b07cf336a69}".upper()
     # r = win32com.client.Record("GridTypes", 0)
     # print(project.DataExporter.GetObjects3D().Get(2).GetMesh(0).GetGrid(0).GetVertex(0))
     objects3d_collection = project.DataExporter.GetObjects3D()  # Экспортируем все объекты
 
-    rooms_data = []
+    rooms_data: list[Room] = []
     doors_data = []
     stairs_data = []
-    level_data = []
+    level_data: list[LevelElevation] = []
 
     def level():
         for idx in range(object_collection.Count):
@@ -130,10 +142,10 @@ def main():
                 # for i in range(parameterContainer.GetIds().Count):
                 level_name = "{1bb1addf-a3c0-4356-9525-107ea7df1513}".upper()
                 level_data.append(
-                    {
-                        "levelZ": parameter_container.GetS(level_elevation).GetDoubleValue(),
-                        "levelName": parameter_container.GetS(level_name).GetStringValue(),
-                    }
+                    LevelElevation(
+                        parameter_container.GetS(level_elevation).GetDoubleValue(),
+                        parameter_container.GetS(level_name).GetStringValue(),
+                    )
                 )
                 print(parameter_container.GetS(level_elevation).GetDoubleValue())
                 print(parameter_container.GetS(level_name).GetStringValue())
@@ -215,83 +227,51 @@ def main():
 
     get_coord_stairs()
 
-    def get_coord_room():
-        x_points = []
-        y_points = []
+    def get_coord_room() -> dict[Literal["xPoints", "yPoints"], list[Point3D]]:
+        x_points: list[Point3D] = []
+        y_points: list[Point3D] = []
         room_height = "{187c61e7-26dd-40e3-aeb6-3274aec082d2}".upper()
         net_floor_area = "{ea60d526-b527-4896-8e4c-c84a8462b3cc}".upper()  # Площадь
-        "{3ca98238-a2b5-424a-a579-6a0d66ef075a}".upper()  # Высота относительно 0, вкрхняя грань
         level_id = "{8cdf2e5b-03f7-4101-9b43-93b9da18f411}".upper()
         level_elevation = "{440a20f8-42b8-4a5f-9000-39ef58e0302b}".upper()
-        # for i in range(parameterContainer.GetIds().Count):
-        "{1bb1addf-a3c0-4356-9525-107ea7df1513}".upper()
 
         for i in range(objects3d_collection.Count):
-            # print(f'сколько всего обжект 3Д коллекшн{Objects3DCollection.Count}')
-            # print(project.DataExporter.GetObjects3D().Get(6).ModelObjectTypeS)
             object3d = objects3d_collection.Get(i)
             if object3d.ModelObjectTypeS == room_type:  # Ищем меши комнаты
-                # triangleVertex = []
-                # print(f'ModelObjectId {Object3D.ModelObjectId}')
-                room = {}
-                points = []
-                # print(Object3D.ModelObjectId)
                 object_id = object3d.ModelObjectId
-                # print(objectCollection.GetById(objectId).UniqueIdS)
                 object_collection.GetById(object_id).UniqueId
-                # print(UniqueId)
                 object_collection.GetById(object_id)
-                room["Sign"] = "Room"
-                room["Output"] = []
-                id_string = object_collection.GetById(object_id).UniqueIdS
-                room["Id"] = id_string[1 : len(id_string) - 1]
-                # room['Id'] = id_string
-                room["@"] = id_string[1 : len(id_string) - 1]
-                room["Name"] = object_collection.GetById(object_id).Name
 
                 quantities_container = object_collection.GetById(object_id).GetQuantities()
-                # propertyContainer = object_collection.GetById(object_id).GetProperties()
                 parameter_container = object_collection.GetById(object_id).GetParameters()
 
-                room["Area"] = quantities_container.GetS(net_floor_area).AsArea(3)
-                # print(parameterContainer.GetS(RoomHeight).GetDoubleValue())
-                # room['SizeZ'] = quantitiesContainer.GetS(RelativeObjectTopElevation).AsLength(4)
-                room["SizeZ"] = parameter_container.GetS(room_height).GetDoubleValue() / 1000
-
                 level = object_collection.GetById(parameter_container.GetS(level_id).GetIntValue())
-                # levelUuid = level.UniqueIds
-                # levelArr = []
 
-                # room['roomLevelName'] = level.GetParameters().GetS(LevelName).GetStringValue()
-                room["ZLevel"] = level.GetParameters().GetS(level_elevation).GetDoubleValue()
-                # roomLevelName = level.GetParameters().GetS(level_name).GetStringValue()
-                # ZLevel = level.GetParameters().GetS(level_elevation).GetDoubleValue()
-                # print(level.GetParameters().GetS(LevelElevation).GetDoubleValue())
-                # print(level.GetParameters().GetS(LevelName).GetStringValue())
-                # print(objectCollection.GetById(parameterContainer.GetS(LevelId).GetIntValue()).UniqueIdS)
-                # print(parameterContainer.GetS(LevelId).GetIntValue())
-                # print(quantitiesContainer.GetS(RelativeObjectTopElevation).AsLength(4))
-                # room.Id = objectCollection.GetById(objectId).UniqueIdS
+                room = Room(
+                    sign="Room",
+                    outputs=[],
+                    id=UUID(object_collection.GetById(object_id).UniqueIdS),
+                    name=object_collection.GetById(object_id).Name,
+                    area=quantities_container.GetS(net_floor_area).AsArea(3),
+                    size_z=parameter_container.GetS(room_height).GetDoubleValue() / 1000,
+                    z_level=level.GetParameters().GetS(level_elevation).GetDoubleValue(),
+                    xy=[Geometry([])],
+                )
 
+                # добавление вершин
                 for j in range(object3d.GetMesh(0).GridCount):  # У комнаты 1 меш
                     grid_room = object3d.GetMesh(0).GetGrid(j)  # разбиваем комнаты на грид
                     if grid_room.GridType == 1:  # идентификатор пола, ищем пол комнаты
                         for k in range(grid_room.VertexCount):  # Перебираем вершины
-                            points.append(
-                                {"x": grid_room.GetVertex(k).X, "y": grid_room.GetVertex(k).Y}
+                            room.xy[0].points.append(
+                                Point3D(
+                                    grid_room.GetVertex(k).X,
+                                    grid_room.GetVertex(k).Y,
+                                    grid_room.GetVertex(k).Z,
+                                )
                             )
-                            # FIXME: Ломается определение свзязей при переходе к метрам
-                            # points.append({'x': gridRoom.GetVertex(k).X / 1000, 'y': gridRoom.GetVertex(k).Y / 1000})
-                            # print(f' Комната {gridRoom.GetVertex(k)}')
-                            # xPoints.append(gridRoom.GetVertex(k).X)
-                            # yPoints.append(gridRoom.GetVertex(k).Y)
-                        # points.append(points[0])
-                # triangleVertex.append(triangle)
-                room["XY"] = [{"points": points}]
-                # pprint(room)
-                # roomsData[levelUuid] = []
+                        # points.append(points[0]) # замыкающая точка полигона
                 rooms_data.append(room)
-                # pprint(roomsData)
         return {"xPoints": x_points, "yPoints": y_points}
 
     def get_coord_door():
@@ -390,12 +370,12 @@ def main():
             room_points = get_coord(room)
             for door in doors_data:
                 door_points = get_coord(door)
-                if room["ZLevel"] == door["ZLevel"]:
+                if room.zLevel == door["ZLevel"]:
                     if is_in_edge(
                         door_points["X"], door_points["Y"], room_points["X"], room_points["Y"]
                     ):
-                        room["Output"].append(door["Id"])
-                        door["Output"].append(room["Id"])
+                        room.output.append(door["Id"])
+                        door["Output"].append(room.id)
                 if len(door["Output"]) < 2:
                     door["Sign"] = "DoorWayOut"
                 else:
@@ -423,7 +403,7 @@ def main():
 
         # pprint(roomsData)
         # pprint(doorsData)
-        build_element = rooms_data + doors_data + stairs_data
+        build_element: list[Any] = rooms_data + doors_data + stairs_data
 
         # pprint(f' door id  {getCoord(doorsData[0])}')
         # pprint(f' rooms id  {getCoord(roomsData[0])}')
@@ -431,18 +411,23 @@ def main():
         # pprint(BuildElement)
 
         for elevation in level_data:
-            temp_level = []
+            temp_level: list[Any] = []
             for idx in range(len(build_element)):
                 try:
-                    if build_element[idx]["ZLevel"] == elevation["levelZ"]:
-                        build_element[idx].pop("ZLevel")
-                        temp_level.append(build_element[idx])
+                    element = build_element[idx]
+                    if isinstance(element, Room):
+                        if element.zLevel == elevation.levelZ:
+                            temp_level.append(element.__dict__)
+                    else:
+                        if element["ZLevel"] == elevation.levelZ:
+                            element.pop("ZLevel")
+                            temp_level.append(element)
                 except KeyError:
                     continue
             level.append(
                 {
-                    "Name": elevation["levelName"],
-                    "SizeZ": elevation["levelZ"] / 1000,
+                    "Name": elevation.levelName,
+                    "SizeZ": elevation.levelZ / 1000,
                     "BuildElement": temp_level,
                 }
             )
@@ -465,8 +450,13 @@ def main():
 
         Path(resource_dir_name).mkdir(parents=True, exist_ok=True)
         out_file_path = os.path.join(resource_dir_name, f"{file_name}.json")
-        with open(out_file_path, "w", encoding="utf-8") as jsonf:
-            json_string = json.dumps(jsn, indent=4, ensure_ascii=False)
+        with open(out_file_path, "wb") as jsonf:
+            json_string = orjson.dumps(
+                jsn,
+                option=orjson.OPT_INDENT_2
+                | orjson.OPT_SERIALIZE_DATACLASS
+                | orjson.OPT_SERIALIZE_UUID,
+            )
             jsonf.write(json_string)
 
     level()
