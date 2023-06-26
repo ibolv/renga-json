@@ -6,7 +6,7 @@ from .Geometry import Geometry
 @dataclass
 class Stairway:
     sign: str
-    output: list[str]
+    output: list[UUID]
     id: UUID
     name: str
     area: float
@@ -17,7 +17,7 @@ class Stairway:
     def __init__(
         self,
         sign: str,
-        output: list[str],
+        output: list[UUID],
         id: UUID,
         name: str,
         area: float,

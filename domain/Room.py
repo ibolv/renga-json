@@ -6,7 +6,7 @@ from uuid import UUID
 @dataclass
 class Room:
     sign: str
-    output: list[str]
+    output: list[UUID]
     id: UUID
     name: str
     area: float
@@ -17,7 +17,7 @@ class Room:
     def __init__(
         self,
         sign: str,
-        outputs: list[str],
+        outputs: list[UUID],
         id: UUID,
         name: str,
         area: float,

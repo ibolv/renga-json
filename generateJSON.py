@@ -14,31 +14,57 @@ import orjson
 
 
 def is_in_edge(x: list[float], y: list[float], xp: list[float], yp: list[float]) -> bool:
-    for idx in range(len(x)):
-        for i in range(len(xp)):
+    for x_el, y_el in zip(x, y):
+        for i, (xp_el, yp_el) in enumerate(zip(xp, yp)):
             in_edge: bool = (
-                xp[i] == xp[i - 1]
-                and xp[i] == x[idx]
-                and min(yp[i], yp[i - 1]) <= y[idx] <= max(yp[i], yp[i - 1])
+                xp_el == xp[i - 1]
+                and xp_el == x_el
+                and min(yp_el, yp[i - 1]) <= y_el <= max(yp_el, yp[i - 1])
             )
             if not in_edge:
                 in_edge = (
-                    yp[i] == yp[i - 1]
-                    and yp[i] == y[idx]
-                    and min(xp[i], xp[i - 1]) <= x[idx] <= max(xp[i], xp[i - 1])
+                    yp_el == yp[i - 1]
+                    and yp_el == y_el
+                    and min(xp_el, xp[i - 1]) <= x_el <= max(xp_el, xp[i - 1])
                 )
             if not in_edge:
-                in_edge = min(yp[i], yp[i - 1]) <= y[idx] <= max(yp[i], yp[i - 1]) and min(
-                    xp[i], xp[i - 1]
-                ) <= x[idx] <= max(xp[i], xp[i - 1])
+                in_edge = min(yp_el, yp[i - 1]) <= y_el <= max(yp_el, yp[i - 1]) and min(
+                    xp_el, xp[i - 1]
+                ) <= x_el <= max(xp_el, xp[i - 1])
             if not in_edge:  # проверка вхождения точки в отрезок (Общее уравнение прямой)
-                a = yp[i] - yp[i - 1]
-                b = xp[i - 1] - xp[i]
-                c = xp[i - 1] * yp[i] - xp[i] * yp[i - 1]
-                in_edge = a * x[idx] + b * y[idx] + c == 0
+                a = yp_el - yp[i - 1]
+                b = xp[i - 1] - xp_el
+                c = xp[i - 1] * yp_el - xp_el * yp[i - 1]
+                in_edge = a * x_el + b * y_el + c == 0
             if in_edge:
                 return in_edge
     return False
+
+    # for idx in range(len(x)):
+    #     for i in range(len(xp)):
+    #         in_edge: bool = (
+    #             xp[i] == xp[i - 1]
+    #             and xp[i] == x[idx]
+    #             and min(yp[i], yp[i - 1]) <= y[idx] <= max(yp[i], yp[i - 1])
+    #         )
+    #         if not in_edge:
+    #             in_edge = (
+    #                 yp[i] == yp[i - 1]
+    #                 and yp[i] == y[idx]
+    #                 and min(xp[i], xp[i - 1]) <= x[idx] <= max(xp[i], xp[i - 1])
+    #             )
+    #         if not in_edge:
+    #             in_edge = min(yp[i], yp[i - 1]) <= y[idx] <= max(yp[i], yp[i - 1]) and min(
+    #                 xp[i], xp[i - 1]
+    #             ) <= x[idx] <= max(xp[i], xp[i - 1])
+    #         if not in_edge:  # проверка вхождения точки в отрезок (Общее уравнение прямой)
+    #             a = yp[i] - yp[i - 1]
+    #             b = xp[i - 1] - xp[i]
+    #             c = xp[i - 1] * yp[i] - xp[i] * yp[i - 1]
+    #             in_edge = a * x[idx] + b * y[idx] + c == 0
+    #         if in_edge:
+    #             return in_edge
+    # return False
 
 
 def is_in_edge_xyz(
@@ -92,7 +118,7 @@ def get_coord(build_elem: Room | Stairway | Door) -> dict[Literal["X", "Y"], lis
     return {"X": x, "Y": y}
 
 
-def in_door(door_size_z, z_stair, z_door):
+def in_door(door_size_z: float, z_stair: list[float], z_door: list[float]):
     for stair in z_stair:
         for door in z_door:
             if door - door_size_z <= stair <= door:
@@ -103,7 +129,7 @@ def in_door(door_size_z, z_stair, z_door):
 def main():
     app = win32com.client.Dispatch("Renga.Application.1")
 
-    app.Visible = True
+    app.Visible = False
 
     resource_dir_name = "resources"
     file_name = "school11v3_latest"
@@ -247,6 +273,8 @@ def main():
                 rooms_data.append(room)
         return {"xPoints": x_points, "yPoints": y_points}
 
+    get_coord_room()
+
     def get_coord_door() -> dict[Literal["xPoints", "yPoints"], list[Point3D]]:
         x_points = []
         y_points = []
@@ -296,7 +324,6 @@ def main():
                 doors_data.append(door)
         return {"xPoints": x_points, "yPoints": y_points}
 
-    get_coord_room()
     get_coord_door()
 
     def get_coord_xyz(build_elem: Stairway | Door) -> dict[Literal["X", "Y", "Z"], list[float]]:

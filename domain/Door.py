@@ -6,7 +6,7 @@ from .Geometry import Geometry
 @dataclass
 class Door:
     sign: str
-    output: list[str]
+    output: list[UUID]
     id: UUID
     name: str
     width: float
@@ -17,7 +17,7 @@ class Door:
     def __init__(
         self,
         sign: str,
-        output: list[str],
+        output: list[UUID],
         id: UUID,
         name: str,
         width: float,
