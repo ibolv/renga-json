@@ -8,6 +8,7 @@ from domain.Point3D import Point3D
 from domain.Geometry import Geometry
 from domain.Stairway import Stairway
 from domain.Door import Door
+from domain.Level import Level
 import win32com.client
 import orjson
 
@@ -310,7 +311,7 @@ def main():
         return {"X": X, "Y": Y, "Z": Z}
 
     def bond_obj():
-        level = []
+        level: list[Level] = []
 
         for room in rooms_data:
             room_points = get_coord(room)
@@ -347,7 +348,7 @@ def main():
                 else:
                     door.sign = "DoorWayInt"
 
-        build_element: list[Any] = rooms_data + doors_data + stairs_data
+        build_element: list[Room | Stairway | Door] = rooms_data + doors_data + stairs_data
 
         for elevation in level_data:
             temp_level: list[Any] = []
@@ -359,11 +360,11 @@ def main():
                 except KeyError:
                     continue
             level.append(
-                {
-                    "Name": elevation.levelName,
-                    "SizeZ": elevation.levelZ / 1000,
-                    "BuildElement": temp_level,
-                }
+                Level(
+                    name=elevation.levelName,
+                    sizeZ=elevation.levelZ / 1000,
+                    buildingElements=temp_level,
+                )
             )
 
         jsn = {
@@ -378,7 +379,6 @@ def main():
                 "postcode": project.BuildingInfo.GetAddress().Postcode,
             },
             "Level": level,
-            "Devs": [],
         }
 
         Path(resource_dir_name).mkdir(parents=True, exist_ok=True)
