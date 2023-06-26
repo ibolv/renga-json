@@ -18,7 +18,7 @@
 чтобы запустить тесты выполните `pytest` в вашем терминале
 
 ### Линтинг кода
-чтобы выполнить линтинг с помощью ruff выполните `ruff check .` в вашем терминале
+чтобы выполнить линтинг с помощью ruff выполните `ruff check .` в вашем терминале  
 чтобы выполнить линтинг с помощью black выполните `black --check .` в вашем терминале
 
 ## EN
@@ -39,5 +39,5 @@ run `python generateJSON.py` or `python3 generateJSON.py` in your terminal or ru
 to run tests execute `pytest` in your terminal
 
 ### code linting
-to lint code with ruff execute `ruff check .` in your terminal
+to lint code with ruff execute `ruff check .` in your terminal  
 to lint code with black execute `black --check .` in your terminal
