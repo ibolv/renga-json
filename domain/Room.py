@@ -3,10 +3,10 @@ from .Geometry import Geometry
 from uuid import UUID
 
 
-@dataclass
+@dataclass(frozen=True)
 class Room:
     sign: str
-    output: list[UUID]
+    outputs: list[UUID]
     id: UUID
     name: str
     area: float
@@ -14,23 +14,22 @@ class Room:
     zLevel: float
     xy: list[Geometry]
 
-    def __init__(
-        self,
-        sign: str,
-        outputs: list[UUID],
-        id: UUID,
-        name: str,
-        area: float,
-        size_z: float,
-        z_level: float,
-        xy: list[Geometry],
-    ):
-        super().__init__()
-        self.sign = sign
-        self.output = outputs
-        self.id = id
-        self.name = name
-        self.area = area
-        self.sizeZ = size_z
-        self.zLevel = z_level
-        self.xy = xy
+    # def __init__(
+    #     self,
+    #     sign: str,
+    #     outputs: list[UUID],
+    #     id: UUID,
+    #     name: str,
+    #     area: float,
+    #     sizeZ: float,
+    #     zLevel: float,
+    #     xy: list[Geometry],
+    # ):
+    #     self.sign = sign
+    #     self.outputs = outputs
+    #     self.id = id
+    #     self.name = name
+    #     self.area = area
+    #     self.sizeZ = sizeZ
+    #     self.zLevel = zLevel
+    #     self.xy = xy

@@ -1,9 +1,11 @@
 from dataclasses import dataclass
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class Point2D:
-    def __init__(self, x: float, y: float):
-        super().__init__()
-        self.x = x
-        self.y = y
+    x: float
+    y: float
+
+    # def __init__(self, x: float, y: float):
+    #     self.x = x
+    #     self.y = y

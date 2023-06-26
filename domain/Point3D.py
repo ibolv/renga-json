@@ -1,13 +1,16 @@
 from dataclasses import dataclass
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class Point3D:
-    def __init__(self, x: float, y: float, z: float):
-        super().__init__()
-        self.x = x
-        self.y = y
-        self.z = z
+    x: float
+    y: float
+    z: float
+
+    # def __init__(self, x: float, y: float, z: float):
+    #     self.x = x
+    #     self.y = y
+    #     self.z = z
 
     def __str__(self) -> str:
         return f"(X: {self.x}, Y: {self.y}, Z: {self.z})"
@@ -16,3 +19,6 @@ class Point3D:
         if isinstance(__value, Point3D):
             return self.x == __value.x and self.y == __value.y and self.z == __value.z
         return False
+
+    def __hash__(self) -> int:
+        return hash((self.x, self.y, self.z))
