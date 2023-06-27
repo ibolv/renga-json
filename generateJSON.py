@@ -227,8 +227,7 @@ def main():
             # polygon_points_stair: list[Point3D] = list(set([point for point in points if point.z == min_point_z or point.z == max_point_z]))
 
             stair = Stairway(
-                sign="Staircase",
-                output=[],
+                outputs=[],
                 id=uuid,
                 name=object_name,
                 area=quantities_container.GetS(net_floor_area).AsArea(3),
@@ -240,7 +239,6 @@ def main():
             stairs_data.append(stair)
         elif object3d.ModelObjectTypeS == room_type:  # Ищем меши комнаты
             room = Room(
-                sign="Room",
                 outputs=[],
                 id=uuid,
                 name=object_name,
@@ -293,8 +291,7 @@ def main():
             # polygon_points_stair = list(set([point for point in points if point.z == max_point_z]))
 
             door = Door(
-                sign="Door",
-                output=[],
+                outputs=[],
                 id=uuid,
                 name=object_name,
                 zLevel=z_level,
@@ -330,8 +327,8 @@ def main():
                         door_points["X"], door_points["Y"], room_points["X"], room_points["Y"]
                     ):
                         room.outputs.append(door.id)
-                        door.output.append(room.id)
-                if len(door.output) < 2:
+                        door.outputs.append(room.id)
+                if len(door.outputs) < 2:
                     door.sign = "DoorWayOut"
                 else:
                     door.sign = "DoorWayInt"
@@ -349,9 +346,9 @@ def main():
                     door_points["Z"],
                     door.sizeZ,
                 ):
-                    stair.output.append(door.id)
-                    door.output.append(stair.id)
-                if len(door.output) < 2:
+                    stair.outputs.append(door.id)
+                    door.outputs.append(stair.id)
+                if len(door.outputs) < 2:
                     door.sign = "DoorWayOut"
                 else:
                     door.sign = "DoorWayInt"

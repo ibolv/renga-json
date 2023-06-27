@@ -5,14 +5,14 @@ from .Geometry import Geometry
 
 @dataclass
 class Door:
-    sign: str
-    output: list[UUID]
     id: UUID
     name: str
     width: float
     sizeZ: float
     zLevel: float
+    outputs: list[UUID]
     xy: list[Geometry]
+    sign: str = "DoorWay"
 
     # def __init__(
     #     self,

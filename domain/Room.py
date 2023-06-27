@@ -5,14 +5,14 @@ from uuid import UUID
 
 @dataclass(frozen=True)
 class Room:
-    sign: str
-    outputs: list[UUID]
     id: UUID
     name: str
     area: float
     sizeZ: float
     zLevel: float
+    outputs: list[UUID]
     xy: list[Geometry]
+    sign: str = "Room"
 
     # def __init__(
     #     self,

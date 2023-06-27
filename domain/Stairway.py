@@ -5,14 +5,14 @@ from .Geometry import Geometry
 
 @dataclass(frozen=True)
 class Stairway:
-    sign: str
-    output: list[UUID]
     id: UUID
     name: str
     area: float
     sizeZ: float
     zLevel: float
+    outputs: list[UUID]
     xy: list[Geometry]
+    sign: str = "Staircase"
 
     # def __init__(
     #     self,
