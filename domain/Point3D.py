@@ -7,11 +7,6 @@ class Point3D:
     y: float
     z: float
 
-    # def __init__(self, x: float, y: float, z: float):
-    #     self.x = x
-    #     self.y = y
-    #     self.z = z
-
     def __str__(self) -> str:
         return f"(X: {self.x}, Y: {self.y}, Z: {self.z})"
 
