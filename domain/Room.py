@@ -3,7 +3,7 @@ from .Geometry import Geometry
 from uuid import UUID
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class Room:
     id: UUID
     name: str

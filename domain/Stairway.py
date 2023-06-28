@@ -3,7 +3,7 @@ from uuid import UUID
 from .Geometry import Geometry
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class Stairway:
     id: UUID
     name: str

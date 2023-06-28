@@ -14,6 +14,28 @@ import orjson
 import time
 import asyncio
 
+# GUID for the 'level' object type, as listed in documentation. See "Object types".
+level_type = "{c3ce17ff-6f28-411f-b18d-74fe957b2ba8}".upper()
+level_elevation = "{440a20f8-42b8-4a5f-9000-39ef58e0302b}".upper()
+level_name = "{1bb1addf-a3c0-4356-9525-107ea7df1513}".upper()
+room_type = "{f1a805ff-573d-f46b-ffba-57f4bccaa6ed}".upper()
+door_type = "{1cfba99c-01e7-4078-ae1a-3e2ff0673599}".upper()
+stair_type = "{3f522f49-aee2-4d73-9866-9b07cf336a69}".upper()
+
+level_elevation = "{440a20f8-42b8-4a5f-9000-39ef58e0302b}".upper()
+level_id = "{8cdf2e5b-03f7-4101-9b43-93b9da18f411}".upper()
+net_floor_area = "{ea60d526-b527-4896-8e4c-c84a8462b3cc}".upper()  # Площадь
+
+# for stairs
+stair_height = "{6eb5fbe0-3b56-484b-8dde-06de32187a66}".upper()  # Высота лестницы
+
+# for rooms
+room_height = "{187c61e7-26dd-40e3-aeb6-3274aec082d2}".upper()
+
+# for doors
+door_width = "{569911cd-d708-4274-bc17-107c6a5d47a1}".upper()
+door_height = "{eae12886-6635-4292-b46e-e1a15b5df263}".upper()
+
 
 def is_in_edge(x: list[float], y: list[float], xp: list[float], yp: list[float]) -> bool:
     for x_el, y_el in zip(x, y):
@@ -93,16 +115,18 @@ def get_coord(build_elem: Room | Stairway | Door) -> dict[Literal["X", "Y"], lis
         y.append(build_elem.xy[0].points[i].y)
     return {"X": x, "Y": y}
 
-def get_coord_xyz(build_elem: Stairway | Door) -> dict[Literal["X", "Y", "Z"], list[float]]:
-        X: list[float] = []
-        Y: list[float] = []
-        Z: list[float] = []
 
-        for i in range(len(build_elem.xy[0].points)):
-            X.append(build_elem.xy[0].points[i].x)
-            Y.append(build_elem.xy[0].points[i].y)
-            Z.append(build_elem.xy[0].points[i].z)
-        return {"X": X, "Y": Y, "Z": Z}
+def get_coord_xyz(build_elem: Stairway | Door) -> dict[Literal["X", "Y", "Z"], list[float]]:
+    X: list[float] = []
+    Y: list[float] = []
+    Z: list[float] = []
+
+    for i in range(len(build_elem.xy[0].points)):
+        X.append(build_elem.xy[0].points[i].x)
+        Y.append(build_elem.xy[0].points[i].y)
+        Z.append(build_elem.xy[0].points[i].z)
+    return {"X": X, "Y": Y, "Z": Z}
+
 
 def in_door(door_size_z: float, z_stair: list[float], z_door: list[float]):
     for stair in z_stair:
@@ -110,25 +134,10 @@ def in_door(door_size_z: float, z_stair: list[float], z_door: list[float]):
             if door - door_size_z <= stair <= door:
                 print(f"door - doorSizeZ {door - door_size_z} <= stair {stair} <= door {door}")
                 return True
-            
-async def get_object(
-    object3d: Any,
-    object_collection: Any,
-    level_id: Any,
-    level_elevation: Any,
-    stair_type: str,
-    room_type: str,
-    door_type: str,
-    net_floor_area: str,
-    stair_height: str,
-    room_height: str,
-    door_height: str,
-    door_width: str,
-    stairs_data: list[Stairway],
-    rooms_data: list[Room],
-    doors_data: list[Door]
-):
-    model_object = object_collection.GetById(object3d.ModelObjectId)
+
+
+async def get_room(room_object3d: Any, object_collection: Any) -> Room:
+    model_object = object_collection.GetById(room_object3d.ModelObjectId)
     quantities_container = model_object.GetQuantities()
     parameter_container = model_object.GetParameters()
 
@@ -139,118 +148,137 @@ async def get_object(
     object_name = model_object.Name
     z_level = current_level.GetParameters().GetS(level_elevation).GetDoubleValue()
 
-    if object3d.ModelObjectTypeS == stair_type:
-        points: list[Point3D] = []
-        print(level_id_parameter)
+    # добавление вершин
+    points: list[Point3D] = []
+    mesh = room_object3d.GetMesh(0)
 
-        mesh = object3d.GetMesh(0)
-        for j in range(mesh.GridCount):  # У комнаты 1 меш
-            gridStair = mesh.GetGrid(j)  # разбиваем комнаты на грид
-
-            if gridStair.GridType == 1:  # идентификатор верхней плоскости лестницы
-                for k in range(gridStair.VertexCount):  # Перебираем вершины
-                    vertex = gridStair.GetVertex(k)
-                    points.append(
-                        Point3D(
-                            x=vertex.X,
-                            y=vertex.Y,
-                            z=vertex.Z,
-                        )
+    for i in range(mesh.GridCount):  # У комнаты 1 меш
+        grid_room = mesh.GetGrid(i)  # разбиваем комнаты на грид
+        if grid_room.GridType == 1:  # идентификатор пола, ищем пол комнаты
+            for k in range(grid_room.VertexCount):  # Перебираем вершины
+                vertex = grid_room.GetVertex(k)
+                points.append(
+                    Point3D(
+                        vertex.X,
+                        vertex.Y,
+                        vertex.Z,
                     )
-                    # points_z.append(gridStair.GetVertex(k).Z)
+                )
+    # points.append(points[0]) # замыкающая точка полигона
 
-        print(len(points))
-        points_z = [point.z for point in points]
-        min_point_z = min(points_z)
-        max_point_z = max(points_z)
-        polygon_points_stair: list[Point3D] = []
-        for point in points:  # Выбираем самые низкие и высокие точки летницы
-            if point not in polygon_points_stair and (
-                point.z == min_point_z or point.z == max_point_z
-            ):
-                polygon_points_stair.append(point)
+    return Room(
+        outputs=[],
+        id=uuid,
+        name=object_name,
+        area=quantities_container.GetS(net_floor_area).AsArea(3),
+        sizeZ=parameter_container.GetS(room_height).GetDoubleValue() / 1000,
+        zLevel=z_level,
+        xy=[Geometry(points)],
+    )
+
+
+async def get_door(
+    door_object3d: Any,
+    object_collection: Any,
+):
+    model_object = object_collection.GetById(door_object3d.ModelObjectId)
+    parameter_container = model_object.GetParameters()
+
+    level_id_parameter = parameter_container.GetS(level_id).GetIntValue()
+    current_level = object_collection.GetById(level_id_parameter)
+
+    uuid = UUID(model_object.UniqueIdS)
+    object_name = model_object.Name
+    z_level = current_level.GetParameters().GetS(level_elevation).GetDoubleValue()
+
+    points: list[Point3D] = []
+    mesh = door_object3d.GetMesh(0)
+
+    for i in range(mesh.GridCount):  # У комнаты 1 меш
+        grid_room = mesh.GetGrid(i)  # разбиваем комнаты на грид
+        if grid_room.GridType == 4:  # идентификатор пола, ищем пол комнаты
+            for k in range(grid_room.VertexCount):  # Перебираем вершины
+                vertex = grid_room.GetVertex(k)
+                points.append(
+                    Point3D(
+                        x=vertex.X,
+                        y=vertex.Y,
+                        z=vertex.Z,
+                    )
+                )
+                # points_z.append(grid_room.GetVertex(k).Z)
+            # points.append(points[0])
+
+    max_point_z = max([point.z for point in points])
+    polygon_points_stair: list[Point3D] = []
+    for point in points:
+        if point.z == max_point_z and point not in polygon_points_stair:
+            polygon_points_stair.append(point)
+
+    # polygon_points_stair = list(set([point for point in points if point.z == max_point_z]))
+
+    return Door(
+        outputs=[],
+        id=uuid,
+        name=object_name,
+        zLevel=z_level,
+        width=parameter_container.GetS(door_width).GetDoubleValue() / 1000,
+        sizeZ=parameter_container.GetS(door_height).GetDoubleValue(),
+        xy=[Geometry(polygon_points_stair)],
+    )
+
+
+async def get_stairway(
+    stairway_object3d: Any,
+    object_collection: Any,
+) -> Stairway:
+    model_object = object_collection.GetById(stairway_object3d.ModelObjectId)
+    quantities_container = model_object.GetQuantities()
+    parameter_container = model_object.GetParameters()
+
+    level_id_parameter = parameter_container.GetS(level_id).GetIntValue()
+    current_level = object_collection.GetById(level_id_parameter)
+
+    uuid = UUID(model_object.UniqueIdS)
+    object_name = model_object.Name
+    z_level = current_level.GetParameters().GetS(level_elevation).GetDoubleValue()
+
+    points: list[Point3D] = []
+    mesh = stairway_object3d.GetMesh(0)
+    for i in range(mesh.GridCount):  # У комнаты 1 меш
+        gridStair = mesh.GetGrid(i)  # разбиваем комнаты на грид
+
+        if gridStair.GridType == 1:  # идентификатор верхней плоскости лестницы
+            for k in range(gridStair.VertexCount):  # Перебираем вершины
+                vertex = gridStair.GetVertex(k)
+                points.append(
+                    Point3D(
+                        x=vertex.X,
+                        y=vertex.Y,
+                        z=vertex.Z,
+                    )
+                )
+                # points_z.append(gridStair.GetVertex(k).Z)
+
+    points_z = [point.z for point in points]
+    min_point_z = min(points_z)
+    max_point_z = max(points_z)
+    polygon_points_stair: list[Point3D] = []
+    for point in points:  # Выбираем самые низкие и высокие точки летницы
+        if point not in polygon_points_stair and (point.z == min_point_z or point.z == max_point_z):
+            polygon_points_stair.append(point)
 
         # polygon_points_stair: list[Point3D] = list(set([point for point in points if point.z == min_point_z or point.z == max_point_z]))
 
-        stair = Stairway(
-            outputs=[],
-            id=uuid,
-            name=object_name,
-            area=quantities_container.GetS(net_floor_area).AsArea(3),
-            sizeZ=parameter_container.GetS(stair_height).GetDoubleValue() / 1000,
-            zLevel=z_level,
-            xy=[Geometry(polygon_points_stair)],
-        )
-
-        stairs_data.append(stair)
-    elif object3d.ModelObjectTypeS == room_type:  # Ищем меши комнаты
-        room = Room(
-            outputs=[],
-            id=uuid,
-            name=object_name,
-            area=quantities_container.GetS(net_floor_area).AsArea(3),
-            sizeZ=parameter_container.GetS(room_height).GetDoubleValue() / 1000,
-            zLevel=z_level,
-            xy=[Geometry([])],
-        )
-
-        # добавление вершин
-        mesh = object3d.GetMesh(0)
-        for j in range(mesh.GridCount):  # У комнаты 1 меш
-            grid_room = mesh.GetGrid(j)  # разбиваем комнаты на грид
-            if grid_room.GridType == 1:  # идентификатор пола, ищем пол комнаты
-                for k in range(grid_room.VertexCount):  # Перебираем вершины
-                    vertex = grid_room.GetVertex(k) 
-                    room.xy[0].points.append(
-                        Point3D(
-                            vertex.X,
-                            vertex.Y,
-                            vertex.Z,
-                        )
-                    )
-                # points.append(points[0]) # замыкающая точка полигона
-
-        rooms_data.append(room)
-    elif object3d.ModelObjectTypeS == door_type:  # Ищем меши комнаты
-        points: list[Point3D] = []
-        print(parameter_container.GetS(level_id).GetIntValue())
-
-        mesh = object3d.GetMesh(0)
-        for j in range(mesh.GridCount):  # У комнаты 1 меш
-            grid_room = mesh.GetGrid(j)  # разбиваем комнаты на грид
-            if grid_room.GridType == 4:  # идентификатор пола, ищем пол комнаты
-                for k in range(grid_room.VertexCount):  # Перебираем вершины
-                    vertex = grid_room.GetVertex(k)
-                    points.append(
-                        Point3D(
-                            x=vertex.X,
-                            y=vertex.Y,
-                            z=vertex.Z,
-                        )
-                    )
-                    # points_z.append(grid_room.GetVertex(k).Z)
-                # points.append(points[0])
-
-        points_z = [point.z for point in points]
-        max_point_z = max(points_z)
-        polygon_points_stair: list[Point3D] = []
-        for point in points:
-            if point.z == max_point_z and point not in polygon_points_stair:
-                polygon_points_stair.append(point)
-
-        # polygon_points_stair = list(set([point for point in points if point.z == max_point_z]))
-
-        door = Door(
-            outputs=[],
-            id=uuid,
-            name=object_name,
-            zLevel=z_level,
-            width=parameter_container.GetS(door_width).GetDoubleValue() / 1000,
-            sizeZ=parameter_container.GetS(door_height).GetDoubleValue(),
-            xy=[Geometry(polygon_points_stair)],
-        )
-
-        doors_data.append(door)
+    return Stairway(
+        outputs=[],
+        id=uuid,
+        name=object_name,
+        area=quantities_container.GetS(net_floor_area).AsArea(3),
+        sizeZ=parameter_container.GetS(stair_height).GetDoubleValue() / 1000,
+        zLevel=z_level,
+        xy=[Geometry(polygon_points_stair)],
+    )
 
 
 async def main():
@@ -272,71 +300,74 @@ async def main():
     object_collection = project.Model.GetObjects()
     objects3d_collection = project.DataExporter.GetObjects3D()  # Экспортируем все объекты
 
-    # GUID for the 'level' object type, as listed in documentation. See "Object types".
-    level_type = "{c3ce17ff-6f28-411f-b18d-74fe957b2ba8}".upper()
-    room_type = "{f1a805ff-573d-f46b-ffba-57f4bccaa6ed}".upper()
-    door_type = "{1cfba99c-01e7-4078-ae1a-3e2ff0673599}".upper()
-    stair_type = "{3f522f49-aee2-4d73-9866-9b07cf336a69}".upper()
+    room_objects3d: list[Any] = []
+    door_objects3d: list[Any] = []
+    stairway_objects3d: list[Any] = []
+
+    print("Collecting objects...")
+    start = time.time()
+    for i in range(objects3d_collection.Count):
+        room_object3d = objects3d_collection.Get(i)
+        if room_object3d.ModelObjectTypeS == stair_type:
+            stairway_objects3d.append(room_object3d)
+        elif room_object3d.ModelObjectTypeS == room_type:  # Ищем меши комнаты
+            room_objects3d.append(room_object3d)
+        elif room_object3d.ModelObjectTypeS == door_type:  # Ищем меши комнаты
+            door_objects3d.append(room_object3d)
+
+    end = time.time()
+    print(f"Objects collected ({end - start:.3f}s)")
+
+    print("Number of rooms:", len(room_objects3d))
+    print("Number of doors:", len(door_objects3d))
+    print("Number of stairways:", len(stairway_objects3d))
 
     rooms_data: list[Room] = []
     doors_data: list[Door] = []
     stairs_data: list[Stairway] = []
     level_data: list[LevelElevation] = []
 
-    level_elevation = "{440a20f8-42b8-4a5f-9000-39ef58e0302b}".upper()
-    level_id = "{8cdf2e5b-03f7-4101-9b43-93b9da18f411}".upper()
-    net_floor_area = "{ea60d526-b527-4896-8e4c-c84a8462b3cc}".upper()  # Площадь
-
-    # for stairs
-    stair_height = "{6eb5fbe0-3b56-484b-8dde-06de32187a66}".upper()  # Высота лестницы
-
-    # for rooms
-    room_height = "{187c61e7-26dd-40e3-aeb6-3274aec082d2}".upper()
-
-    # for doors
-    door_width = "{569911cd-d708-4274-bc17-107c6a5d47a1}".upper()
-    door_height = "{eae12886-6635-4292-b46e-e1a15b5df263}".upper()
-
-    print("Collecting objects...")
-    start = time.time()
-    objects3d: list[Any] = []
-    for i in range(objects3d_collection.Count):
-        objects3d.append(objects3d_collection.Get(i))
-    end = time.time()
-    print(f"Objects collected ({end - start:.3f}s)")
-    print("Number of objects: ", len(objects3d))
-
     print("Collecting object's vertices...")
     start = time.time()
-    async with asyncio.TaskGroup() as tg:
-        for object3d in objects3d:
-            # object3d = objects3d_collection.Get(i)
-            _ = tg.create_task(
-                get_object(
-                    object3d=object3d,
-                    object_collection=object_collection,
-                    level_id=level_id,
-                    level_elevation=level_elevation,
-                    stair_type=stair_type,
-                    room_type=room_type,
-                    door_type=door_type,
-                    net_floor_area=net_floor_area,
-                    stair_height=stair_height,
-                    room_height=room_height,
-                    door_height=door_height,
-                    door_width=door_width,
-                    stairs_data=stairs_data,
-                    rooms_data=rooms_data,
-                    doors_data=doors_data
-                )
+
+    for future in asyncio.as_completed(
+        [
+            get_room(
+                room_object3d=room_object3d,
+                object_collection=object_collection,
             )
+            for room_object3d in room_objects3d
+        ]
+    ):
+        rooms_data.append(await future)
+
+    for future in asyncio.as_completed(
+        [
+            get_door(
+                door_object3d=door_object3d,
+                object_collection=object_collection,
+            )
+            for door_object3d in door_objects3d
+        ]
+    ):
+        doors_data.append(await future)
+
+    for future in asyncio.as_completed(
+        [
+            get_stairway(
+                stairway_object3d=stairway_object3d,
+                object_collection=object_collection,
+            )
+            for stairway_object3d in stairway_objects3d
+        ]
+    ):
+        stairs_data.append(await future)
 
     end = time.time()
     print(f"Vertices collected {end - start:.3f}s")
 
-    
-    level_elevation = "{440a20f8-42b8-4a5f-9000-39ef58e0302b}".upper()
-    level_name = "{1bb1addf-a3c0-4356-9525-107ea7df1513}".upper()
+    print("Binding objects...")
+    start = time.time()
 
     for idx in range(object_collection.Count):
         object = object_collection.GetByIndex(idx)
@@ -348,9 +379,10 @@ async def main():
                     parameter_container.GetS(level_name).GetStringValue(),
                 )
             )
-            print(parameter_container.GetS(level_elevation).GetDoubleValue())
-            print(parameter_container.GetS(level_name).GetStringValue())
-
+            print(
+                parameter_container.GetS(level_name).GetStringValue(),
+                parameter_container.GetS(level_elevation).GetDoubleValue(),
+            )
 
     level: list[Level] = []
     for room in rooms_data:
@@ -407,6 +439,9 @@ async def main():
             )
         )
 
+    end = time.time()
+    print(f"Binding completed ({end - start:.3f}s)")
+
     jsn = {
         "nameBuilding": project.BuildingInfo.Name,
         "program_name": "Программа создания файла JSON",
@@ -426,9 +461,7 @@ async def main():
     with open(out_file_path, "wb") as jsonf:
         json_string = orjson.dumps(
             jsn,
-            option=orjson.OPT_INDENT_2
-            | orjson.OPT_SERIALIZE_DATACLASS
-            | orjson.OPT_SERIALIZE_UUID,
+            option=orjson.OPT_INDENT_2 | orjson.OPT_SERIALIZE_DATACLASS | orjson.OPT_SERIALIZE_UUID,
         )
         _ = jsonf.write(json_string)
 
