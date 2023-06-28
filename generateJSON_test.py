@@ -13,14 +13,16 @@ def test_get_coord():
         area=1,
         sizeZ=2,
         zLevel=0,
-        xy=[Geometry(
-            [
-                Point3D(x=0, y=0, z=0),
-                Point3D(x=1, y=0, z=0),
-                Point3D(x=1, y=1, z=0),
-                Point3D(x=0, y=1, z=0),
-            ]
-        )]
+        xy=[
+            Geometry(
+                [
+                    Point3D(x=0, y=0, z=0),
+                    Point3D(x=1, y=0, z=0),
+                    Point3D(x=1, y=1, z=0),
+                    Point3D(x=0, y=1, z=0),
+                ]
+            )
+        ],
     )
 
     coordinates = {"X": [0, 1, 1, 0], "Y": [0, 0, 1, 1]}
