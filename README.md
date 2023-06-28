@@ -5,6 +5,7 @@
 ### Предварительные требования
 1. Python 3.11 или выше
 2. pip 23.1.2 или выше (чтобы обновить pip необходимо выполнить `python -m pip install --upgrade pip`)
+3. BIM-система [Renga](https://rengabim.com/)
 
 ### Установка проекта
 1. Скачать файлы проекта
@@ -26,6 +27,7 @@
 ### Prerequisites
 1. Python 3.11 or above
 2. pip 23.1.2 or above (to upgrade pip run `python -m pip install --upgrade pip`)
+3. BIM software [Renga](https://rengabim.com/en/)
 
 ### project setup
 1. clone this repository
