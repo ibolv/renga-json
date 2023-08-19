@@ -36,6 +36,4 @@ def test_point_inside_edge():
     elem2_points_x = [0.5, 1, 1, 0.5]
     elem2_points_y = [-0.5, -0.5, 0, 0]
 
-    assert main.is_in_edge(
-        x=elem2_points_x, y=elem2_points_y, xp=elem1_points_x, yp=elem1_points_y
-    )
+    assert main.is_in_edge(x=elem2_points_x, y=elem2_points_y, xp=elem1_points_x, yp=elem1_points_y)

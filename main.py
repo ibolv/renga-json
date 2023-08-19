@@ -134,8 +134,7 @@ def in_door(door_size_z: float, z_stair: list[float], z_door: list[float]):
     for stair in z_stair:
         for door in z_door:
             if door - door_size_z <= stair <= door:
-                print(
-                    f"door - doorSizeZ {door - door_size_z} <= stair {stair} <= door {door}")
+                print(f"door - doorSizeZ {door - door_size_z} <= stair {stair} <= door {door}")
                 return True
 
 
@@ -417,8 +416,7 @@ async def parse_renga_project(path_to_project_file: str, output_file_path: str):
             else:
                 door.sign = "DoorWayInt"
 
-    build_element: list[Room | Stairway |
-                        Door] = rooms_data + doors_data + stairs_data
+    build_element: list[Room | Stairway | Door] = rooms_data + doors_data + stairs_data
 
     for elevation in level_data:
         temp_level: list[Any] = []
@@ -469,21 +467,18 @@ async def parse_renga_project(path_to_project_file: str, output_file_path: str):
 
 
 @click.command()
-@click.argument('renga_project_file_path', type=click.STRING)
-@click.argument('output_file', type=click.STRING)
+@click.argument("renga_project_file_path", type=click.STRING)
+@click.argument("output_file", type=click.STRING)
 def cli(renga_project_file_path: str, output_file: str):
     current_dir = os.path.dirname(os.path.realpath(__file__))
 
     renga_file_path = renga_project_file_path
     if not os.path.isabs(renga_project_file_path):
-        renga_file_path = os.path.join(
-            current_dir, renga_project_file_path)
+        renga_file_path = os.path.join(current_dir, renga_project_file_path)
 
-    output_file_path = output_file if output_file.endswith('.json') else f"{output_file}.json"
+    output_file_path = output_file if output_file.endswith(".json") else f"{output_file}.json"
     if not os.path.isabs(output_file_path):
-        output_file_path = os.path.join(
-            current_dir, output_file_path
-        )
+        output_file_path = os.path.join(current_dir, output_file_path)
 
     if not os.path.exists(output_file_path):
         os.makedirs(os.path.dirname(output_file_path))
