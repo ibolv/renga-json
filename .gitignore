@@ -4,5 +4,6 @@
 __pycache__
 build
 *.egg-info
+.python-version
 
 resources

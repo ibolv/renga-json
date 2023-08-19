@@ -1,4 +1,3 @@
 {
-	"python.analysis.typeCheckingMode": "strict",
-	"python.formatting.provider": "black"
+	"python.analysis.typeCheckingMode": "strict"
 }
