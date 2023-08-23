@@ -5,16 +5,16 @@ description = 'Renga json'
 readme = 'README.md'
 requires-python = '>=3.11'
 
-dependencies = ['pywin32 == 306', 'orjson == 3.9.1']
+dependencies = ['pywin32 == 306', 'orjson == 3.9.1', 'click == 8.1.7']
 
 [project.optional-dependencies]
 all = [
-	'pywin32-stubs == 1.0.7',
-	'ruff == 0.0.272',
-	'pytest == 7.3.2',
-	'pyright == 1.1.314',
-	'black[d] == 23.3.0',
-	'pre-commit == 3.3.3',
+    'pywin32-stubs == 1.0.7',
+    'ruff == 0.0.272',
+    'pytest == 7.3.2',
+    'pyright == 1.1.314',
+    'black[d] == 23.3.0',
+    'pre-commit == 3.3.3',
 ]
 
 [tool.ruff]

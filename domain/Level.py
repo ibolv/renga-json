@@ -9,8 +9,3 @@ class Level:
     name: str
     sizeZ: float
     buildingElements: list[Room | Stairway | Door]
-
-    # def __init__(self, name: str, sizeZ: float, buildingElements: list[Room | Stairway | Door]):
-    #     self.name = name
-    #     self.sizeZ = sizeZ
-    #     self.buildingElements = buildingElements
